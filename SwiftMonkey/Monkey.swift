@@ -58,6 +58,13 @@ import UIKit
     }
     ```
 */
+public protocol MonkeyDelegate: class {
+    
+    func didExecuteAction(with weight: Double, counter: Int)
+    
+}
+
+
 public class Monkey {
     var r: Random
     let frame: CGRect
@@ -67,6 +74,8 @@ public class Monkey {
 
     var regularActions: [(interval: Int, action: (Void) -> Void)]
     var actionCounter = 0
+    
+    public weak var delegate: MonkeyDelegate?
 
     /**
         Create a Monkey object with a randomised seed.
@@ -157,12 +166,15 @@ public class Monkey {
 
     /// Generate one random event.
     public func actRandomly() {
+        var count = 0
         let x = r.randomDouble() * totalWeight
         for action in randomActions {
             if x < action.accumulatedWeight {
                 action.action()
+                delegate?.didExecuteAction(with: action.accumulatedWeight, counter: count)
                 return
             }
+            count += 1
         }
     }
 
@@ -173,6 +185,7 @@ public class Monkey {
         for action in regularActions {
             if actionCounter % action.interval == 0 {
                 action.action()
+                delegate?.didExecuteAction(with: Double(action.interval), counter: actionCounter)
             }
         }
     }
